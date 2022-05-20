@@ -40,18 +40,27 @@ public class GmailMessageSenderService {
             }
         });
 
-        try {
-            MimeMessage message = new MimeMessage(session);
+        boolean isSent = false;
+        int attempts = 0;
+        while (!isSent){
+            try {
+                MimeMessage message = new MimeMessage(session);
 
-            message.setFrom(new InternetAddress(fromLogin));
-            message.addRecipient(Message.RecipientType.TO, new InternetAddress(toLogin));
+                message.setFrom(new InternetAddress(fromLogin));
+                message.addRecipient(Message.RecipientType.TO, new InternetAddress(toLogin));
 
-            message.setSubject(header);
-            message.setText(this.message);
+                message.setSubject(header);
+                message.setText(this.message);
 
-            Transport.send(message);
-        } catch (MessagingException e){
-            System.out.println(e.getMessage());
+                Transport.send(message);
+                isSent = true;
+            } catch (MessagingException e){
+                System.out.println(e.getMessage());
+                attempts ++;
+                if (attempts > 10){
+                    break;
+                }
+            }
         }
     }
 

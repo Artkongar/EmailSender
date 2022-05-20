@@ -10,7 +10,6 @@ public class Main {
 
     public static void main(String[] args){
         SpringApplication springMvcApplication = new SpringApplication(Main.class);
-        springMvcApplication.setDefaultProperties(Collections.singletonMap("server.port", "8088"));
         springMvcApplication.run(args);
     }
 }
