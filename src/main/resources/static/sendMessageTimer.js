@@ -18,6 +18,6 @@ function callToSendMail() {
     xhr.send(messageStr);
 }
 
-setInterval(callToSendMail, 5000);
+setInterval(callToSendMail, 14400000);
 
 

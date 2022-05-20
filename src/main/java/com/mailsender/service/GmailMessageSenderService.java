@@ -13,24 +13,19 @@ import java.util.Properties;
 @Service
 public class GmailMessageSenderService {
 
-    @Value("from_login")
+    @Value("${from_login}")
     private String fromLogin;
-    @Value("to_login")
+
+    @Value("${to_login}")
     private String toLogin;
 
-    @Value("password")
+    @Value("${password}")
     private String password;
 
     private String header;
     private String message;
 
     public void sendMessage() {
-
-        String from = "DearLoveMessages@gmail.com";
-        String password = "Artysh654";
-
-        String to = "artkongar8@gmail.com";
-
         String host = "smtp.gmail.com";
 
         Properties properties = System.getProperties();
@@ -41,22 +36,22 @@ public class GmailMessageSenderService {
 
         Session session = Session.getInstance(properties, new javax.mail.Authenticator() {
             protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(from, password);
+                return new PasswordAuthentication(fromLogin, password);
             }
         });
 
         try {
             MimeMessage message = new MimeMessage(session);
 
-            message.setFrom(new InternetAddress(from));
-            message.addRecipient(Message.RecipientType.TO, new InternetAddress(to));
+            message.setFrom(new InternetAddress(fromLogin));
+            message.addRecipient(Message.RecipientType.TO, new InternetAddress(toLogin));
 
             message.setSubject(header);
             message.setText(this.message);
 
             Transport.send(message);
         } catch (MessagingException e){
-            System.out.println("Переделать под норм логи");
+            System.out.println(e.getMessage());
         }
     }
 

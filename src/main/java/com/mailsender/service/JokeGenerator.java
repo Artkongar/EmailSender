@@ -78,11 +78,11 @@ public class JokeGenerator {
         } else {
             String setup = (String) response.get("setup");
             String delivery = (String) response.get("delivery");
-            bf.append("Сатравка: " + setup);
+            bf.append("Затравка: " + setup);
             bf.append("\n");
             bf.append("Панчлайн: " + delivery);
             bf.append("\n");
-            bf.append("Сатравка: " + translateAPI(setup));
+            bf.append("Затравка: " + translateAPI(setup));
             bf.append("\n");
             bf.append("Панчлайн: " + translateAPI(delivery));
         }
