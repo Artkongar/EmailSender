@@ -25,7 +25,7 @@ public class GmailMessageSenderService {
     private String header;
     private String message;
 
-    public void sendMessage() {
+    public void sendMessage() throws Exception {
         String host = "smtp.gmail.com";
 
         Properties properties = System.getProperties();
@@ -52,13 +52,14 @@ public class GmailMessageSenderService {
                 message.setSubject(header);
                 message.setText(this.message);
 
+                System.out.println("Sending message");
                 Transport.send(message);
                 isSent = true;
             } catch (MessagingException e){
                 System.out.println(e.getMessage());
                 attempts ++;
                 if (attempts > 10){
-                    break;
+                    throw new Exception();
                 }
             }
         }

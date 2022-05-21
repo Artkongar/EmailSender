@@ -1,17 +1,23 @@
 package com.mailsender.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.mailsender.data.ServiceStatus;
+import com.mailsender.scheduling.ScheduledEmailSender;
 import com.mailsender.service.GmailMessageSenderService;
 import com.mailsender.service.JokeGenerator;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProcessor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
 
 @Controller
 public class EmailSenderController {
@@ -20,6 +26,19 @@ public class EmailSenderController {
 
     private JokeGenerator jokeGenerator;
     private GmailMessageSenderService mailSender;
+    private ScheduledAnnotationBeanPostProcessor postProcessor;
+    private ScheduledEmailSender scheduledTask;
+    private final String scheduledTaskBeanName = "EmailSender";
+
+    @Autowired
+    public void setPostProcessor(ScheduledAnnotationBeanPostProcessor postProcessor){
+        this.postProcessor = postProcessor;
+    }
+
+    @Autowired
+    public void setScheduledTask(ScheduledEmailSender scheduledTask){
+        this.scheduledTask = scheduledTask;
+    }
 
     @Autowired
     public void setMailSender(GmailMessageSenderService mailSender) {
@@ -31,8 +50,11 @@ public class EmailSenderController {
         this.jokeGenerator = jokeGenerator;
     }
 
+    @ResponseBody
     @RequestMapping(value = "/send_message", method = RequestMethod.POST)
-    public String sendMail(@RequestBody JSONObject messageData) {
+    public boolean sendMail(@RequestBody JSONObject messageData) throws JsonProcessingException {
+        System.out.println(postProcessor);
+        boolean response;
         String jokeType = (String) messageData.get("jokeType");
         try {
             String translatedJoke = jokeGenerator.getTranslatedJoke();
@@ -46,9 +68,36 @@ public class EmailSenderController {
             mailSender.setHeader("Love you so much\n" + formatedDateTime);
             mailSender.setMessage(bf.toString());
             mailSender.sendMessage();
+            response = true;
         } catch (Exception e) {
-            System.out.println("Залогировать нормально ошибку");
+            response = false;
         }
-        return "index";
+        return response;
     }
+
+    @ResponseBody
+    @RequestMapping(value = "is_working", method = RequestMethod.POST)
+    public Map<String, Boolean> checkIsWorking(@RequestBody JSONObject messageData) {
+        String action = (String) messageData.get("action");
+        Map<String, Boolean> response = new HashMap<>();
+        String key = "result";
+        if ("start".equals(action)) {
+            if (!ServiceStatus.getInstance().isWorking()) {
+                ServiceStatus.getInstance().setWorking(true);
+                postProcessor.postProcessAfterInitialization(scheduledTask, scheduledTaskBeanName);
+            }
+            response.put(key, true);
+        } else if ("stop".equals(action)) {
+            if (ServiceStatus.getInstance().isWorking()) {
+                ServiceStatus.getInstance().setWorking(false);
+                postProcessor.postProcessBeforeDestruction(scheduledTask, scheduledTaskBeanName);
+            }
+            response.put(key, false);
+        } else if ("status".equals(action)){
+            response.put(key, ServiceStatus.getInstance().isWorking());
+        }
+        return response;
+    }
+
+
 }
