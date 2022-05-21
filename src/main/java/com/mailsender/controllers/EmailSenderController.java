@@ -5,6 +5,7 @@ import com.mailsender.data.ServiceStatus;
 import com.mailsender.scheduling.ScheduledEmailSender;
 import com.mailsender.service.GmailMessageSenderService;
 import com.mailsender.service.JokeGenerator;
+import com.mailsender.utils.SchedulingSwitcher;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProcessor;
@@ -22,23 +23,11 @@ import java.util.Map;
 @Controller
 public class EmailSenderController {
 
-    private static final DateTimeFormatter format = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
-
     private JokeGenerator jokeGenerator;
     private GmailMessageSenderService mailSender;
-    private ScheduledAnnotationBeanPostProcessor postProcessor;
-    private ScheduledEmailSender scheduledTask;
-    private final String scheduledTaskBeanName = "EmailSender";
 
     @Autowired
-    public void setPostProcessor(ScheduledAnnotationBeanPostProcessor postProcessor){
-        this.postProcessor = postProcessor;
-    }
-
-    @Autowired
-    public void setScheduledTask(ScheduledEmailSender scheduledTask){
-        this.scheduledTask = scheduledTask;
-    }
+    private SchedulingSwitcher schedulingSwitcher;
 
     @Autowired
     public void setMailSender(GmailMessageSenderService mailSender) {
@@ -53,13 +42,12 @@ public class EmailSenderController {
     @ResponseBody
     @RequestMapping(value = "/send_message", method = RequestMethod.POST)
     public boolean sendMail(@RequestBody JSONObject messageData) throws JsonProcessingException {
-        System.out.println(postProcessor);
         boolean response;
         String jokeType = (String) messageData.get("jokeType");
         try {
             String translatedJoke = jokeGenerator.getTranslatedJoke();
             String russiianJoke = jokeGenerator.getRussianJoke(jokeType);
-            String formatedDateTime = LocalDateTime.now().format(format);
+            String formatedDateTime = LocalDateTime.now().format(ScheduledEmailSender.format);
 
             StringBuffer bf = new StringBuffer();
             bf.append(translatedJoke);
@@ -79,25 +67,8 @@ public class EmailSenderController {
     @RequestMapping(value = "is_working", method = RequestMethod.POST)
     public Map<String, Boolean> checkIsWorking(@RequestBody JSONObject messageData) {
         String action = (String) messageData.get("action");
-        Map<String, Boolean> response = new HashMap<>();
         String key = "result";
-        if ("start".equals(action)) {
-            if (!ServiceStatus.getInstance().isWorking()) {
-                ServiceStatus.getInstance().setWorking(true);
-                postProcessor.postProcessAfterInitialization(scheduledTask, scheduledTaskBeanName);
-            }
-            response.put(key, true);
-        } else if ("stop".equals(action)) {
-            if (ServiceStatus.getInstance().isWorking()) {
-                ServiceStatus.getInstance().setWorking(false);
-                postProcessor.postProcessBeforeDestruction(scheduledTask, scheduledTaskBeanName);
-            }
-            response.put(key, false);
-        } else if ("status".equals(action)){
-            response.put(key, ServiceStatus.getInstance().isWorking());
-        }
+        Map<String, Boolean> response = schedulingSwitcher.switchEmailSender(action, key);
         return response;
     }
-
-
 }

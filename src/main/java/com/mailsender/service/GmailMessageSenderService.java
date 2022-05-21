@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Properties;
 
-@Service
+
 public class GmailMessageSenderService {
 
     @Value("${from_login}")
@@ -52,7 +52,6 @@ public class GmailMessageSenderService {
                 message.setSubject(header);
                 message.setText(this.message);
 
-                System.out.println("Sending message");
                 Transport.send(message);
                 isSent = true;
             } catch (MessagingException e){
