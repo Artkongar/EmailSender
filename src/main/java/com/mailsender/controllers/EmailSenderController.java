@@ -1,14 +1,12 @@
 package com.mailsender.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.mailsender.data.ServiceStatus;
 import com.mailsender.scheduling.ScheduledEmailSender;
-import com.mailsender.service.GmailMessageSenderService;
+import com.mailsender.service.MailMessageSenderService;
 import com.mailsender.service.JokeGenerator;
 import com.mailsender.utils.SchedulingSwitcher;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProcessor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,21 +14,19 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
 import java.util.Map;
 
 @Controller
 public class EmailSenderController {
 
     private JokeGenerator jokeGenerator;
-    private GmailMessageSenderService mailSender;
+    private MailMessageSenderService mailSender;
 
     @Autowired
     private SchedulingSwitcher schedulingSwitcher;
 
     @Autowired
-    public void setMailSender(GmailMessageSenderService mailSender) {
+    public void setMailSender(MailMessageSenderService mailSender) {
         this.mailSender = mailSender;
     }
 
@@ -46,18 +42,20 @@ public class EmailSenderController {
         String jokeType = (String) messageData.get("jokeType");
         try {
             String translatedJoke = jokeGenerator.getTranslatedJoke();
-            String russiianJoke = jokeGenerator.getRussianJoke(jokeType);
+            String russianJoke = jokeGenerator.getRussianJoke(jokeType);
             String formatedDateTime = LocalDateTime.now().format(ScheduledEmailSender.format);
 
             StringBuffer bf = new StringBuffer();
             bf.append(translatedJoke);
             bf.append("\n___________________________________________________________________\n");
-            bf.append(russiianJoke);
+            bf.append(russianJoke);
             mailSender.setHeader("Love you so much\n" + formatedDateTime);
             mailSender.setMessage(bf.toString());
             mailSender.sendMessage();
+            System.out.println("Message was sent");
             response = true;
         } catch (Exception e) {
+            System.out.println("Can not send Email");
             response = false;
         }
         return response;

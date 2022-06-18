@@ -1,17 +1,19 @@
 package com.mailsender.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import java.net.URLEncoder;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Properties;
 
 
-public class GmailMessageSenderService {
+public class MailMessageSenderService {
 
     @Value("${from_login}")
     private String fromLogin;
@@ -22,14 +24,15 @@ public class GmailMessageSenderService {
     @Value("${password}")
     private String password;
 
+    @Value("${email_host}")
+    private String emailHost;
+
     private String header;
     private String message;
 
     public void sendMessage() throws Exception {
-        String host = "smtp.gmail.com";
-
         Properties properties = System.getProperties();
-        properties.put("mail.smtp.host", host);
+        properties.put("mail.smtp.host", emailHost);
         properties.put("mail.smtp.port", "465");
         properties.put("mail.smtp.ssl.enable", "true");
         properties.put("mail.smtp.auth", "true");
@@ -39,11 +42,11 @@ public class GmailMessageSenderService {
                 return new PasswordAuthentication(fromLogin, password);
             }
         });
-
         boolean isSent = false;
         int attempts = 0;
         while (!isSent){
             try {
+
                 MimeMessage message = new MimeMessage(session);
 
                 message.setFrom(new InternetAddress(fromLogin));
@@ -54,7 +57,7 @@ public class GmailMessageSenderService {
 
                 Transport.send(message);
                 isSent = true;
-            } catch (MessagingException e){
+            } catch (Exception e){
                 System.out.println(e.getMessage());
                 attempts ++;
                 if (attempts > 10){

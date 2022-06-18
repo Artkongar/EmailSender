@@ -5,7 +5,7 @@ function getRandomInt(max) {
 function callToSendMail() {
     let xhr = new XMLHttpRequest();
     let hostname = location.hostname;
-    xhr.open('POST', 'https://' + hostname + ':/send_message', true);
+    xhr.open('POST', window.location.protocol + '//' + hostname + ':8090/send_message', true);
     xhr.setRequestHeader('Access-Control-Allow-Origin', '*');
     xhr.setRequestHeader('Access-Control-Allow-Methods', 'POST');
     xhr.setRequestHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
@@ -13,7 +13,7 @@ function callToSendMail() {
     xhr.onload = function () {
         if (xhr.status === 200) {
             let status = xhr.responseText;
-            if (status == 'true'){
+            if (status == 'true') {
                 console.log("Successful");
             }
         }
@@ -24,8 +24,7 @@ function callToSendMail() {
         "}";
     xhr.send(messageStr);
 }
-/*
-setInterval(callToSendMail, 7200000);*/
+
 
 
 

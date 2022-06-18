@@ -1,23 +1,20 @@
 package com.mailsender.scheduling;
 
 import com.mailsender.data.ServiceStatus;
-import com.mailsender.service.GmailMessageSenderService;
+import com.mailsender.service.MailMessageSenderService;
 import com.mailsender.service.JokeGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProcessor;
-import org.springframework.scheduling.config.ScheduledTask;
-import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Random;
-import java.util.Set;
 
 public class ScheduledEmailSender {
 
     private JokeGenerator jokeGenerator;
-    private GmailMessageSenderService mailSender;
+    private MailMessageSenderService mailSender;
     public static final DateTimeFormatter format = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
     private Random rnd = new Random();
 
@@ -30,16 +27,15 @@ public class ScheduledEmailSender {
     }
 
     @Autowired
-    public void setMailSender(GmailMessageSenderService mailSender) {
+    public void setMailSender(MailMessageSenderService mailSender) {
         this.mailSender = mailSender;
     }
 
     private int messageNumber = 0;
 
-    @Scheduled(fixedRate = 10000)
+    @Scheduled(cron = "0 0 */2 * * ?")
     public void reportCurrentTime() {
         if (ServiceStatus.getInstance().isWorking()) {
-            Set<ScheduledTask> setTasks = postProcessor.getScheduledTasks();
             messageNumber ++;
             try {
                 String jokeType = String.valueOf(rnd.nextInt(17));

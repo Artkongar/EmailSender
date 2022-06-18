@@ -1,5 +1,6 @@
 package com.mailsender.service;
 
+import com.mailsender.utils.StringEncoder;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -7,7 +8,6 @@ import org.apache.http.impl.client.HttpClients;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.springframework.stereotype.Service;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -60,7 +60,7 @@ public class JokeGenerator {
         DocumentBuilder db = dbf.newDocumentBuilder();
         Document doc = db.parse(new ByteArrayInputStream(bf.toString().getBytes()));
         NodeList list = doc.getElementsByTagName("content");
-        return list.item(0).getTextContent();
+        return StringEncoder.encodeUTF8(list.item(0).getTextContent());
     }
 
     public String getTranslatedJoke() throws IOException, ParseException {
@@ -86,6 +86,6 @@ public class JokeGenerator {
             bf.append("\n");
             bf.append("Панчлайн: " + translateAPI(delivery));
         }
-        return bf.toString();
+        return StringEncoder.encodeUTF8(bf.toString());
     }
 }
