@@ -1,7 +1,7 @@
 function startService(action, operation) {
     let xhr = new XMLHttpRequest();
     let hostname = location.hostname;
-    xhr.open('POST',  window.location.protocol + '//' + hostname + ':8090/is_working', true);
+    xhr.open('POST',  window.location.protocol + '//' + hostname + ':' + window.location.port + '/is_working', true);
     xhr.setRequestHeader('Access-Control-Allow-Origin', '*');
     xhr.setRequestHeader('Access-Control-Allow-Methods', 'POST');
     xhr.setRequestHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");

@@ -8,14 +8,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.*;
 import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
@@ -30,8 +23,7 @@ public class JokeGenerator {
         CloseableHttpClient httpclient = HttpClients.createDefault();
         HttpGet httpget = new HttpGet(endpoint);
         HttpResponse httpresponse = httpclient.execute(httpget);
-
-        return httpresponse.getEntity().getContent();//, StandardCharsets.UTF_8);
+        return httpresponse.getEntity().getContent();
     }
 
     private String translateAPI(String req) throws IOException, ParseException {
@@ -45,22 +37,25 @@ public class JokeGenerator {
         return translatedText;
     }
 
-    public String getRussianJoke(String jokeType) throws IOException, ParseException, ParserConfigurationException, SAXException, XPathExpressionException {
-        String url = "http://rzhunemogu.ru/Rand.aspx?CType=" + jokeType;
-        InputStream in = createGetRequest(url);
-        BufferedReader reader = new BufferedReader(new InputStreamReader(in, Charset.forName("windows-1251")));
-        StringBuffer bf = new StringBuffer();
-        String line;
-        while ((line = reader.readLine()) != null){
-            bf.append(line);
-            bf.append("\n");
-        }
+    public String getRussianJoke(String jokeType) {
+        int attempts = 10;
+        int attempt = 0;
 
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        DocumentBuilder db = dbf.newDocumentBuilder();
-        Document doc = db.parse(new ByteArrayInputStream(bf.toString().getBytes()));
-        NodeList list = doc.getElementsByTagName("content");
-        return StringEncoder.encodeUTF8(list.item(0).getTextContent());
+        while (true){
+            attempt ++;
+            try{
+                String url = "http://rzhunemogu.ru/RandJSON.aspx?CType" + jokeType;
+                InputStream in = createGetRequest(url);
+
+                JSONObject root = (JSONObject) parser.parse(new InputStreamReader(in, Charset.forName("windows-1251")));
+                String result = (String) root.get("content");
+                return StringEncoder.encodeUTF8(result);
+            } catch (Exception e){
+                if (attempt >= attempts){
+                    return "Can not find russian joke";
+                }
+            }
+        }
     }
 
     public String getTranslatedJoke() throws IOException, ParseException {

@@ -27,16 +27,6 @@ public class MailSenderREST {
     private JSONParser parser = new JSONParser();
 
     public void send() throws IOException, ParseException {
-        FileOutputStream out = new FileOutputStream("joke.txt");
-        out.write(body.getBytes(StandardCharsets.UTF_8));
-        out.close();
-
-        BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream("test.txt")));
-        String newBody = "";
-        String line;
-        while ((line = br.readLine()) != null){
-            newBody += URLEncoder.encode(line,"UTF-8") + "%0A";
-        }
 
         String url = "https://api.unisender.com/ru/api/sendEmail?format=json&lang=ru" +
                 "&" +
@@ -50,7 +40,7 @@ public class MailSenderREST {
                 "&" +
                 "subject=" + subject +
                 "&" +
-                "body=" + newBody +
+                "body=" + body +
                 "&" +
                 "list_id=1";
 
