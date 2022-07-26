@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"></meta>
+    <style>
+
+        .lineLeft {
+            border-left: 1px solid green; /* Линия слева от текста */
+            padding-left: 10px; /* Расстояние между линией и текстом */
+            margin-left: 10px; /* Расстояние от левого края до линии */
+        }
+        .lineUp {
+            border-top: 1px solid green; /* Линия слева от текста */
+            padding-left: 10px; /* Расстояние между линией и текстом */
+            margin-left: 10px; /* Расстояние от левого края до линии */
+        }
+    </style>
+</head>
+<body>
+
+<table style="margin-bottom: 20px">
+    <tr>
+        <td/>
+        <td class="lineLeft">
+            <div style="color: #076b91; font-size: 80px">
+                %s
+            </div>
+        </td>
+        <td class="lineLeft">
+            <div style="color: #076b91; font-size: 80px">
+                %s
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <td class="lineUp">
+            <div style="color: #076b91; font-size: 80px">
+                Затравка
+            </div>
+        </td>
+        <td class="lineUp lineLeft">
+            <div style="color: #1896FF;">
+                %s
+            </div>
+        </td>
+        <td class="lineLeft lineUp">
+            <div style="color: #DA58A3;">
+                %s
+            </div>
+        </td>
+
+    </tr>
+    <tr>
+        <td class="lineUp">
+            <div style="color: #076b91; font-size: 80px">
+                Панчлайн
+            </div>
+        </td>
+        <td class="lineLeft lineUp">
+            <div style="color: #58DAC8;">
+                %s
+            </div>
+        </td>
+        <td class="lineLeft lineUp">
+            <div style="color: #58DAC8;">
+                %s
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <td class="lineUp" colspan="3">
+            <div style="color: #076b91; font-size: 75px">
+                %s
+            </div>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

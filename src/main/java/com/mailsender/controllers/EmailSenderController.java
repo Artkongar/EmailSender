@@ -1,9 +1,10 @@
 package com.mailsender.controllers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.mailsender.data.TranslatedJoke;
 import com.mailsender.scheduling.ScheduledEmailSender;
-import com.mailsender.service.MailMessageSenderService;
+import com.mailsender.service.EmailMessageSenderService;
 import com.mailsender.service.JokeGenerator;
+import com.mailsender.utils.MessageImageCreator;
 import com.mailsender.utils.SchedulingSwitcher;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,13 +21,16 @@ import java.util.Map;
 public class EmailSenderController {
 
     private JokeGenerator jokeGenerator;
-    private MailMessageSenderService mailSender;
+    private EmailMessageSenderService mailSender;
 
     @Autowired
     private SchedulingSwitcher schedulingSwitcher;
 
     @Autowired
-    public void setMailSender(MailMessageSenderService mailSender) {
+    private MessageImageCreator messageImageCreator;
+
+    @Autowired
+    public void setMailSender(EmailMessageSenderService mailSender) {
         this.mailSender = mailSender;
     }
 
@@ -37,20 +41,31 @@ public class EmailSenderController {
 
     @ResponseBody
     @RequestMapping(value = "/send_message", method = RequestMethod.POST)
-    public boolean sendMail(@RequestBody JSONObject messageData) throws JsonProcessingException {
+    public boolean sendMail(@RequestBody JSONObject messageData) {
         boolean response;
         String jokeType = (String) messageData.get("jokeType");
         try {
-            String translatedJoke = jokeGenerator.getTranslatedJoke();
+            System.out.println("Start sending");
+            TranslatedJoke translatedJoke = jokeGenerator.getTranslatedJoke();
             String russianJoke = jokeGenerator.getRussianJoke(jokeType);
             String formatedDateTime = LocalDateTime.now().format(ScheduledEmailSender.format);
 
-            StringBuffer bf = new StringBuffer();
-            bf.append(translatedJoke);
-            bf.append("\n___________________________________________________________________\n");
-            bf.append(russianJoke);
-            mailSender.setHeader("Love you so much\n" + formatedDateTime);
-            mailSender.setMessage(bf.toString());
+            if (translatedJoke.isHasPunchline()) {
+                messageImageCreator.createPNG(
+                        translatedJoke.getSubject(),
+                        translatedJoke.getSubjectRu(),
+
+                        translatedJoke.getSetup(),
+                        translatedJoke.getSetupRu(),
+
+                        translatedJoke.getPunchline(),
+                        translatedJoke.getPunchlineRu(),
+                        russianJoke
+                );
+                mailSender.setMessage(messageImageCreator.uploadAttachment());
+            }
+
+            mailSender.setHeader(formatedDateTime);
             mailSender.sendMessage();
             System.out.println("Message was sent");
             response = true;

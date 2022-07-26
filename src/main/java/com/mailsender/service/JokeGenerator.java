@@ -1,5 +1,6 @@
 package com.mailsender.service;
 
+import com.mailsender.data.TranslatedJoke;
 import com.mailsender.utils.StringEncoder;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -9,6 +10,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import javax.mail.Message;
 import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
@@ -58,29 +60,28 @@ public class JokeGenerator {
         }
     }
 
-    public String getTranslatedJoke() throws IOException, ParseException {
+    public TranslatedJoke getTranslatedJoke() throws IOException, ParseException {
         String url = "https://v2.jokeapi.dev/joke/Any";
         JSONObject response = (JSONObject) parser.parse(new InputStreamReader(createGetRequest(url), StandardCharsets.UTF_8));
         String category = (String) response.get("category");
         String joke = (String) response.get("joke");
-        StringBuffer bf = new StringBuffer();
-        bf.append(category + " | " + translateAPI(category));
-        bf.append("\n");
+
+        TranslatedJoke translatedJoke = new TranslatedJoke();
+        translatedJoke.setSubject(category);
+        translatedJoke.setSubjectRu(translateAPI(category));
         if (joke != null){
-            bf.append(joke);
-            bf.append("\n");
-            bf.append(translateAPI(joke));
+            translatedJoke.setHasPunchline(false);
+            translatedJoke.setJokeRu(translateAPI(joke));
+            translatedJoke.setJoke(joke);
         } else {
             String setup = (String) response.get("setup");
             String delivery = (String) response.get("delivery");
-            bf.append("Затравка: " + setup);
-            bf.append("\n");
-            bf.append("Панчлайн: " + delivery);
-            bf.append("\n");
-            bf.append("Затравка: " + translateAPI(setup));
-            bf.append("\n");
-            bf.append("Панчлайн: " + translateAPI(delivery));
+            translatedJoke.setSetup(setup);
+            translatedJoke.setPunchline(delivery);
+            translatedJoke.setSetupRu(translateAPI(setup));
+            translatedJoke.setPunchlineRu(translateAPI(delivery));
         }
-        return StringEncoder.encodeUTF8(bf.toString());
+
+        return translatedJoke;
     }
 }

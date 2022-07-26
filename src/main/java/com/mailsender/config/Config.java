@@ -1,9 +1,9 @@
 package com.mailsender.config;
 
 import com.mailsender.scheduling.ScheduledEmailSender;
-import com.mailsender.service.MailMessageSenderService;
+import com.mailsender.service.EmailMessageSenderService;
 import com.mailsender.service.JokeGenerator;
-import com.mailsender.service.MailSenderREST;
+import com.mailsender.utils.MessageImageCreator;
 import com.mailsender.utils.SchedulingSwitcher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,8 +24,8 @@ public class Config {
     }
 
     @Bean
-    public MailMessageSenderService getGmailMessageSenderService() {
-        return new MailMessageSenderService();
+    public EmailMessageSenderService getGmailMessageSenderService() {
+        return new EmailMessageSenderService();
     }
 
     @Bean
@@ -34,8 +34,13 @@ public class Config {
     }
 
     @Bean
-    SchedulingSwitcher getSchedulingSwitcher() {
+    public SchedulingSwitcher getSchedulingSwitcher() {
         return new SchedulingSwitcher();
+    }
+
+    @Bean
+    public MessageImageCreator getMessageImageCreator(){
+        return new MessageImageCreator();
     }
 
 }

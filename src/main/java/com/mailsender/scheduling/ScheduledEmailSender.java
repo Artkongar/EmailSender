@@ -1,8 +1,10 @@
 package com.mailsender.scheduling;
 
 import com.mailsender.data.ServiceStatus;
-import com.mailsender.service.MailMessageSenderService;
+import com.mailsender.data.TranslatedJoke;
+import com.mailsender.service.EmailMessageSenderService;
 import com.mailsender.service.JokeGenerator;
+import com.mailsender.utils.MessageImageCreator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProcessor;
@@ -14,9 +16,12 @@ import java.util.Random;
 public class ScheduledEmailSender {
 
     private JokeGenerator jokeGenerator;
-    private MailMessageSenderService mailSender;
+    private EmailMessageSenderService mailSender;
     public static final DateTimeFormatter format = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
     private Random rnd = new Random();
+
+    @Autowired
+    private MessageImageCreator messageImageCreator;
 
     @Autowired
     private ScheduledAnnotationBeanPostProcessor postProcessor;
@@ -27,28 +32,38 @@ public class ScheduledEmailSender {
     }
 
     @Autowired
-    public void setMailSender(MailMessageSenderService mailSender) {
+    public void setMailSender(EmailMessageSenderService mailSender) {
         this.mailSender = mailSender;
     }
 
     private int messageNumber = 0;
 
-    @Scheduled(cron = "0 0 */2 * * ?")
+    @Scheduled(fixedDelay = 10000) // cron = "0 0 */2 * * ?"
     public void reportCurrentTime() {
         if (ServiceStatus.getInstance().isWorking()) {
             messageNumber ++;
             try {
                 String jokeType = String.valueOf(rnd.nextInt(17));
-                String translatedJoke = jokeGenerator.getTranslatedJoke();
+                TranslatedJoke translatedJoke = jokeGenerator.getTranslatedJoke();
                 String russianJoke = jokeGenerator.getRussianJoke(jokeType);
                 String formatedDateTime = LocalDateTime.now().format(format);
 
-                StringBuffer bf = new StringBuffer();
-                bf.append(translatedJoke);
-                bf.append("\n___________________________________________________________________\n");
-                bf.append(russianJoke);
-                mailSender.setHeader("Love you so much\n" + formatedDateTime);
-                mailSender.setMessage(bf.toString());
+                if (translatedJoke.isHasPunchline()) {
+                    messageImageCreator.createPNG(
+                            translatedJoke.getSubject(),
+                            translatedJoke.getSubjectRu(),
+
+                            translatedJoke.getSetup(),
+                            translatedJoke.getSetupRu(),
+
+                            translatedJoke.getPunchline(),
+                            translatedJoke.getPunchlineRu(),
+                            russianJoke
+                    );
+                    mailSender.setMessage(messageImageCreator.uploadAttachment());
+                }
+
+                mailSender.setHeader(formatedDateTime);
                 System.out.println("Sending message №" + messageNumber + " ...");
                 mailSender.sendMessage();
                 System.out.println("Message №" + messageNumber + " was sent");
