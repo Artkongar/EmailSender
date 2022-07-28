@@ -52,15 +52,7 @@ public class EmailSenderController {
 
             if (translatedJoke.isHasPunchline()) {
                 messageImageCreator.createPNG(
-                        translatedJoke.getSubject(),
-                        translatedJoke.getSubjectRu(),
-
-                        translatedJoke.getSetup(),
-                        translatedJoke.getSetupRu(),
-
-                        translatedJoke.getPunchline(),
-                        translatedJoke.getPunchlineRu(),
-                        russianJoke
+                        translatedJoke, russianJoke
                 );
                 mailSender.setMessage(messageImageCreator.uploadAttachment());
             }
@@ -71,6 +63,7 @@ public class EmailSenderController {
             response = true;
         } catch (Exception e) {
             System.out.println("Can not send Email");
+            System.out.println(e.getMessage());
             response = false;
         }
         return response;

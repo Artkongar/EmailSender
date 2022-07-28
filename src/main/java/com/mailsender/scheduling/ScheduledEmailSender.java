@@ -50,15 +50,7 @@ public class ScheduledEmailSender {
 
                 if (translatedJoke.isHasPunchline()) {
                     messageImageCreator.createPNG(
-                            translatedJoke.getSubject(),
-                            translatedJoke.getSubjectRu(),
-
-                            translatedJoke.getSetup(),
-                            translatedJoke.getSetupRu(),
-
-                            translatedJoke.getPunchline(),
-                            translatedJoke.getPunchlineRu(),
-                            russianJoke
+                            translatedJoke, russianJoke
                     );
                     mailSender.setMessage(messageImageCreator.uploadAttachment());
                 }
