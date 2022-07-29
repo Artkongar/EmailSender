@@ -1,6 +1,7 @@
 package com.mailsender.utils;
 
-import com.mailsender.data.TranslatedJoke;
+import com.mailsender.data.joke.Joke;
+import com.mailsender.data.joke.TranslatedJoke;
 import com.nylas.Files;
 import com.nylas.NylasAccount;
 import com.nylas.NylasClient;
@@ -13,8 +14,9 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Random;
-import java.util.stream.Collectors;
 
 
 public class MessageImageCreator {
@@ -32,7 +34,7 @@ public class MessageImageCreator {
     @Value("${png_resource}")
     private String pngResourcePath;
 
-    private String wrapTranslatedJoke(TranslatedJoke translatedJoke, String russianJoke) {
+    private String wrapJokesToHtmlTable(Joke... jokes) {
         StringBuffer resultText = new StringBuffer();
         resultText.append("" +
                 "<!DOCTYPE html>\n" +
@@ -57,89 +59,25 @@ public class MessageImageCreator {
                 "\n" +
                 "<table style=\"margin-bottom: 20px\">"
         );
-        if (translatedJoke.isHasPunchline()) {
-            resultText.append("" +
-                    "<tr>\n" +
-                    "        <td/>\n" +
-                    "        <td class=\"lineLeft\">\n" +
-                    "            <div style=\"color: #076b91; font-size: 80%\">\n" +
-                    translatedJoke.getSubject() +
-                    "                \n" +
-                    "            </div>\n" +
-                    "        </td>\n" +
-                    "        <td class=\"lineLeft\">\n" +
-                    "            <div style=\"color: #076b91; font-size: 80%\">\n" +
-                    translatedJoke.getSubjectRu() +
-                    "                \n" +
-                    "            </div>\n" +
-                    "        </td>\n" +
-                    "    </tr>\n" +
-                    "    <tr>\n" +
-                    "        <td class=\"lineUp\">\n" +
-                    "            <div style=\"color: #076b91; font-size: 80%\">\n" +
-                    "                Затравка\n" +
-                    "            </div>\n" +
-                    "        </td>\n" +
-                    "        <td class=\"lineUp lineLeft\">\n" +
-                    "            <div style=\"color: #1896FF;\">\n" +
-                    translatedJoke.getSetup() +
-                    "                \n" +
-                    "            </div>\n" +
-                    "        </td>\n" +
-                    "        <td class=\"lineLeft lineUp\">\n" +
-                    "            <div style=\"color: #DA58A3;\">\n" +
-                    translatedJoke.getSetupRu() +
-                    "                \n" +
-                    "            </div>\n" +
-                    "        </td>\n" +
-                    "\n" +
-                    "    </tr>\n" +
-                    "    <tr>\n" +
-                    "        <td class=\"lineUp\">\n" +
-                    "            <div style=\"color: #076b91; font-size: 80%\">\n" +
-                    "                Панчлайн\n" +
-                    "            </div>\n" +
-                    "        </td>\n" +
-                    "        <td class=\"lineLeft lineUp\">\n" +
-                    "            <div style=\"color: #58DAC8;\">\n" +
-                    translatedJoke.getPunchline() +
-                    "                \n" +
-                    "            </div>\n" +
-                    "        </td>\n" +
-                    "        <td class=\"lineLeft lineUp\">\n" +
-                    "            <div style=\"color: #58DAC8;\">\n" +
-                    translatedJoke.getPunchlineRu() +
-                    "                \n" +
-                    "            </div>\n" +
-                    "        </td>\n" +
-                    "</tr>"
-            );
-        } else {
-            resultText.append("" +
-                    "<tr>\n" +
-                    "    <td class=\"lineUp\"\n" +
-                    "        <div style=\"color: #076b91;\">\n" +
-                    translatedJoke.getJoke() +
-                    "            \n" +
-                    "        </div>\n" +
-                    "    </td>\n" +
-                    "    <td class=\"lineUp\"\n" +
-                    "        <div style=\"color: #076b91;\">\n" +
-                    translatedJoke.getJokeRu() +
-                    "            \n" +
-                    "        </div>\n" +
-                    "    </td>\n" +
-                    "</tr>");
+
+        int maxCellsNumber = Arrays.stream(jokes).max(new Comparator<Joke>() {
+            @Override
+            public int compare(Joke o1, Joke o2) {
+                if (o1.getCellsNumber() > o2.getCellsNumber()){
+                    return 1;
+                } else if (o1.getCellsNumber() < o2.getCellsNumber()) {
+                    return -1;
+                } else {
+                    return 0;
+                }
+            }
+        }).get().getCellsNumber();
+
+        for (Joke joke : jokes){
+            resultText.append(joke.getHTMLRows());
+            resultText.append("\n");
         }
-        resultText.append("" +
-                "<tr>\n" +
-                "    <td class=\"lineUp\" colspan=\"3\">\n" +
-                "        <div style=\"color: #076b91;\">\n" +
-                        russianJoke +
-                "            \n" +
-                "        </div>\n" +
-                "    </td>\n" +
-                "</tr>");
+
         resultText.append("" +
                 "</table>\n" +
                 "</body>\n" +
@@ -154,16 +92,16 @@ public class MessageImageCreator {
         ImageIO.write(image, "png", new java.io.File(pngPath));
     }
 
-    private void createHtml(TranslatedJoke translatedJoke, String russianJoke) throws IOException {
-        String text = wrapTranslatedJoke(translatedJoke, russianJoke);
+    private void createHtml(Joke... jokes) throws IOException {
+        String text = wrapJokesToHtmlTable(jokes);
 
         FileOutputStream out = new FileOutputStream(htmlResourcePath);
         out.write(text.getBytes(StandardCharsets.UTF_8));
         out.close();
     }
 
-    public String createPNG(TranslatedJoke translatedJoke, String russianJoke) throws IOException {
-        createHtml(translatedJoke, russianJoke);
+    public String createPNG(Joke... jokes) throws IOException {
+        createHtml(jokes);
         convertHtmlToPNG(htmlResourcePath, pngResourcePath);
         return pngResourcePath;
     }

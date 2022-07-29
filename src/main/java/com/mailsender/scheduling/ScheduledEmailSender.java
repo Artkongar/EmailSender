@@ -1,7 +1,8 @@
 package com.mailsender.scheduling;
 
 import com.mailsender.data.ServiceStatus;
-import com.mailsender.data.TranslatedJoke;
+import com.mailsender.data.joke.Joke;
+import com.mailsender.data.joke.TranslatedJoke;
 import com.mailsender.service.EmailMessageSenderService;
 import com.mailsender.service.JokeGenerator;
 import com.mailsender.utils.MessageImageCreator;
@@ -18,7 +19,6 @@ public class ScheduledEmailSender {
     private JokeGenerator jokeGenerator;
     private EmailMessageSenderService mailSender;
     public static final DateTimeFormatter format = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
-    private Random rnd = new Random();
 
     @Autowired
     private MessageImageCreator messageImageCreator;
@@ -43,17 +43,14 @@ public class ScheduledEmailSender {
         if (ServiceStatus.getInstance().isWorking()) {
             messageNumber ++;
             try {
-                String jokeType = String.valueOf(rnd.nextInt(17));
-                TranslatedJoke translatedJoke = jokeGenerator.getTranslatedJoke();
-                String russianJoke = jokeGenerator.getRussianJoke(jokeType);
+                Joke translatedJoke = jokeGenerator.getTranslatedJoke();
+                Joke russianJoke = jokeGenerator.getRussianJoke();
                 String formatedDateTime = LocalDateTime.now().format(format);
 
-                if (translatedJoke.isHasPunchline()) {
-                    messageImageCreator.createPNG(
-                            translatedJoke, russianJoke
-                    );
-                    mailSender.setMessage(messageImageCreator.uploadAttachment());
-                }
+                messageImageCreator.createPNG(
+                        translatedJoke, russianJoke
+                );
+                mailSender.setMessage(messageImageCreator.uploadAttachment());
 
                 mailSender.setHeader(formatedDateTime);
                 System.out.println("Sending message №" + messageNumber + " ...");

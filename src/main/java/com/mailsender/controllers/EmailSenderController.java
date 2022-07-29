@@ -1,6 +1,7 @@
 package com.mailsender.controllers;
 
-import com.mailsender.data.TranslatedJoke;
+import com.mailsender.data.joke.Joke;
+import com.mailsender.data.joke.TranslatedJoke;
 import com.mailsender.scheduling.ScheduledEmailSender;
 import com.mailsender.service.EmailMessageSenderService;
 import com.mailsender.service.JokeGenerator;
@@ -41,32 +42,25 @@ public class EmailSenderController {
 
     @ResponseBody
     @RequestMapping(value = "/send_message", method = RequestMethod.POST)
-    public boolean sendMail(@RequestBody JSONObject messageData) {
-        boolean response;
-        String jokeType = (String) messageData.get("jokeType");
+    public void sendMail() throws Exception {
         try {
             System.out.println("Start sending");
-            TranslatedJoke translatedJoke = jokeGenerator.getTranslatedJoke();
-            String russianJoke = jokeGenerator.getRussianJoke(jokeType);
+            Joke translatedJoke = jokeGenerator.getTranslatedJoke();
+            Joke russianJoke = jokeGenerator.getRussianJoke();
             String formatedDateTime = LocalDateTime.now().format(ScheduledEmailSender.format);
 
-            if (translatedJoke.isHasPunchline()) {
-                messageImageCreator.createPNG(
-                        translatedJoke, russianJoke
-                );
-                mailSender.setMessage(messageImageCreator.uploadAttachment());
-            }
+            messageImageCreator.createPNG(
+                    translatedJoke, russianJoke
+            );
+            mailSender.setMessage(messageImageCreator.uploadAttachment());
 
             mailSender.setHeader(formatedDateTime);
             mailSender.sendMessage();
             System.out.println("Message was sent");
-            response = true;
         } catch (Exception e) {
             System.out.println("Can not send Email");
-            System.out.println(e.getMessage());
-            response = false;
+            throw e;
         }
-        return response;
     }
 
     @ResponseBody

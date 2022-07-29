@@ -1,7 +1,3 @@
-function getRandomInt(max) {
-    return Math.floor(Math.random() * max);
-}
-
 function callToSendMail() {
     let xhr = new XMLHttpRequest();
     let hostname = location.hostname;
@@ -18,11 +14,7 @@ function callToSendMail() {
             }
         }
     }
-    let randomJokeType = getRandomInt(17);
-    let messageStr = "{" +
-        " \"jokeType\" : \"" + randomJokeType + "\"" +
-        "}";
-    xhr.send(messageStr);
+    xhr.send();
 }
 
 

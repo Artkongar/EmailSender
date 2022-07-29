@@ -1,6 +1,8 @@
 package com.mailsender.service;
 
-import com.mailsender.data.TranslatedJoke;
+import com.mailsender.data.joke.Joke;
+import com.mailsender.data.joke.RussianJoke;
+import com.mailsender.data.joke.TranslatedJoke;
 import com.mailsender.utils.StringEncoder;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -10,16 +12,17 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import javax.mail.Message;
 import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Random;
 
 
 public class JokeGenerator {
 
-    private JSONParser parser = new JSONParser();;
+    private JSONParser parser = new JSONParser();
+    Random rnd = new Random();
 
     private InputStream createGetRequest(String endpoint) throws IOException, ParseException {
         CloseableHttpClient httpclient = HttpClients.createDefault();
@@ -30,7 +33,7 @@ public class JokeGenerator {
 
     private String translateAPI(String req) throws IOException, ParseException {
         String url = "https://api.mymemory.translated.net/get?";
-        String params = "q=" +  URLEncoder.encode(req,"UTF-8") + "&langpair="+ URLEncoder.encode("en|ru");
+        String params = "q=" + URLEncoder.encode(req, "UTF-8") + "&langpair=" + URLEncoder.encode("en|ru");
         JSONObject answer = (JSONObject) parser.parse(new InputStreamReader(createGetRequest(url + params), StandardCharsets.UTF_8));
 
         JSONObject responseData = (JSONObject) answer.get("responseData");
@@ -39,41 +42,47 @@ public class JokeGenerator {
         return translatedText;
     }
 
-    public String getRussianJoke(String jokeType) {
+    public Joke getRussianJoke() throws IOException, ParseException {
         int attempts = 10;
         int attempt = 0;
 
-        while (true){
-            attempt ++;
-            try{
-                String url = "http://rzhunemogu.ru/RandJSON.aspx?CType" + jokeType;
+        int[] jokeTypeNumbers = {1, 2, 3, 4, 5, 8, 11, 12, 13, 14, 15, 18};
+        int jokeType = jokeTypeNumbers[rnd.nextInt(jokeTypeNumbers.length)];
+        RussianJoke russianJoke = new RussianJoke(1);
+
+        while (true) {
+            attempt++;
+            try {
+                String url = "http://rzhunemogu.ru/RandJSON.aspx?CType=" + jokeType;
                 InputStream in = createGetRequest(url);
 
                 JSONObject root = (JSONObject) parser.parse(new InputStreamReader(in, Charset.forName("windows-1251")));
                 String result = (String) root.get("content");
-                return StringEncoder.encodeUTF8(result);
-            } catch (Exception e){
-                if (attempt >= attempts){
-                    return "Can not find russian joke";
+                russianJoke.setJokeText(StringEncoder.encodeUTF8(result));
+                return russianJoke;
+            } catch (Exception e) {
+                if (attempt >= attempts) {
+                    throw e;
                 }
             }
         }
     }
 
-    public TranslatedJoke getTranslatedJoke() throws IOException, ParseException {
+    public Joke getTranslatedJoke() throws Exception {
         String url = "https://v2.jokeapi.dev/joke/Any";
         JSONObject response = (JSONObject) parser.parse(new InputStreamReader(createGetRequest(url), StandardCharsets.UTF_8));
         String category = (String) response.get("category");
         String joke = (String) response.get("joke");
 
-        TranslatedJoke translatedJoke = new TranslatedJoke();
+        TranslatedJoke translatedJoke = new TranslatedJoke(2);
         translatedJoke.setSubject(category);
         translatedJoke.setSubjectRu(translateAPI(category));
-        if (joke != null){
+        if (joke != null) {
             translatedJoke.setHasPunchline(false);
             translatedJoke.setJokeRu(translateAPI(joke));
             translatedJoke.setJoke(joke);
         } else {
+            translatedJoke.setCellsNumber(3);
             String setup = (String) response.get("setup");
             String delivery = (String) response.get("delivery");
             translatedJoke.setSetup(setup);
