@@ -1,6 +1,6 @@
 package com.mailsender.data.joke;
 
-public class TranslatedJoke extends Joke {
+public class TranslatedJokeImpl extends JokeImpl {
 
     private boolean hasPunchline = true;
 
@@ -15,10 +15,6 @@ public class TranslatedJoke extends Joke {
     private String joke;
     private String jokeRu;
 
-    public TranslatedJoke(int cellsNumber) {
-        super(cellsNumber);
-    }
-
     public void setHasPunchline(boolean hasPunchline) {
         this.hasPunchline = hasPunchline;
     }
@@ -26,17 +22,18 @@ public class TranslatedJoke extends Joke {
     @Override
     public String getHTMLRows() {
         StringBuffer htmlRows = new StringBuffer();
+        htmlRows.append("<table>");
         if (hasPunchline) {
             htmlRows.append("" +
                     "<tr>\n" +
                     "        <td/>\n" +
-                    "        <td class=\"lineLeft\">\n" +
+                    "        <td>" +
                     "            <div style=\"color: #076b91; font-size: 80%\">\n" +
                     subject +
                     "                \n" +
                     "            </div>\n" +
                     "        </td>\n" +
-                    "        <td class=\"lineLeft\">\n" +
+                    "        <td>" +
                     "            <div style=\"color: #076b91; font-size: 80%\">\n" +
                     subjectRu +
                     "                \n" +
@@ -44,18 +41,18 @@ public class TranslatedJoke extends Joke {
                     "        </td>\n" +
                     "    </tr>\n" +
                     "    <tr>\n" +
-                    "        <td class=\"lineUp\">\n" +
+                    "        <td>" +
                     "            <div style=\"color: #076b91; font-size: 80%\">\n" +
                     "                Затравка\n" +
                     "            </div>\n" +
                     "        </td>\n" +
-                    "        <td class=\"lineUp lineLeft\">\n" +
+                    "        <td>" +
                     "            <div style=\"color: #1896FF;\">\n" +
                     setup +
                     "                \n" +
                     "            </div>\n" +
                     "        </td>\n" +
-                    "        <td class=\"lineLeft lineUp\">\n" +
+                    "        <td>" +
                     "            <div style=\"color: #DA58A3;\">\n" +
                     setupRu +
                     "                \n" +
@@ -64,18 +61,18 @@ public class TranslatedJoke extends Joke {
                     "\n" +
                     "    </tr>\n" +
                     "    <tr>\n" +
-                    "        <td class=\"lineUp\">\n" +
+                    "        <td>" +
                     "            <div style=\"color: #076b91; font-size: 80%\">\n" +
                     "                Панчлайн\n" +
                     "            </div>\n" +
                     "        </td>\n" +
-                    "        <td class=\"lineLeft lineUp\">\n" +
+                    "        <td>" +
                     "            <div style=\"color: #58DAC8;\">\n" +
                     punchline +
                     "                \n" +
                     "            </div>\n" +
                     "        </td>\n" +
-                    "        <td class=\"lineLeft lineUp\">\n" +
+                    "        <td>" +
                     "            <div style=\"color: #58DAC8;\">\n" +
                     punchlineRu +
                     "                \n" +
@@ -86,13 +83,13 @@ public class TranslatedJoke extends Joke {
         } else {
             htmlRows.append("" +
                     "<tr>\n" +
-                    "    <td class=\"lineUp\"\n" +
+                    "    <td" +
                     "        <div style=\"color: #076b91;\">\n" +
                     joke +
                     "            \n" +
                     "        </div>\n" +
                     "    </td>\n" +
-                    "    <td class=\"lineUp\"\n" +
+                    "    <td" +
                     "        <div style=\"color: #076b91;\">\n" +
                     jokeRu +
                     "            \n" +
@@ -100,6 +97,7 @@ public class TranslatedJoke extends Joke {
                     "    </td>\n" +
                     "</tr>");
         }
+        htmlRows.append("</table>");
         return htmlRows.toString();
     }
 

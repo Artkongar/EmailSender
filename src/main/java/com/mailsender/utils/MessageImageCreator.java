@@ -1,7 +1,6 @@
 package com.mailsender.utils;
 
-import com.mailsender.data.joke.Joke;
-import com.mailsender.data.joke.TranslatedJoke;
+import com.mailsender.data.joke.JokeImpl;
 import com.nylas.Files;
 import com.nylas.NylasAccount;
 import com.nylas.NylasClient;
@@ -34,7 +33,7 @@ public class MessageImageCreator {
     @Value("${png_resource}")
     private String pngResourcePath;
 
-    private String wrapJokesToHtmlTable(Joke... jokes) {
+    private String wrapJokesToHtmlTable(JokeImpl... jokes) {
         StringBuffer resultText = new StringBuffer();
         resultText.append("" +
                 "<!DOCTYPE html>\n" +
@@ -43,43 +42,23 @@ public class MessageImageCreator {
                 "    <meta charset=\"utf-8\"></meta>\n" +
                 "    <style>\n" +
                 "\n" +
-                "        .lineLeft {\n" +
-                "            border-left: 1px solid green;\n" +
-                "            padding-left: 10px;\n" +
-                "            margin-left: 10px;\n" +
-                "        }\n" +
-                "        .lineUp {\n" +
-                "            border-top: 1px solid green;\n" +
-                "            padding-left: 10px;\n" +
-                "            margin-left: 10px;\n" +
-                "        }\n" +
+                "        th, td {\n" +
+                "            border: 1px solid #000000;\n" +
+                "            border-collapse: collapse;\n" +
+                "        }" +
                 "    </style>\n" +
                 "</head>\n" +
-                "<body>\n" +
-                "\n" +
-                "<table style=\"margin-bottom: 20px\">"
+                "<body>\n"
         );
 
-        int maxCellsNumber = Arrays.stream(jokes).max(new Comparator<Joke>() {
-            @Override
-            public int compare(Joke o1, Joke o2) {
-                if (o1.getCellsNumber() > o2.getCellsNumber()){
-                    return 1;
-                } else if (o1.getCellsNumber() < o2.getCellsNumber()) {
-                    return -1;
-                } else {
-                    return 0;
-                }
-            }
-        }).get().getCellsNumber();
-
-        for (Joke joke : jokes){
+        for (int i = 0; i < jokes.length; i++) {
+            JokeImpl joke = jokes[i];
+            resultText.append("<div>\n");
             resultText.append(joke.getHTMLRows());
-            resultText.append("\n");
+            resultText.append("</div>\n");
         }
 
         resultText.append("" +
-                "</table>\n" +
                 "</body>\n" +
                 "</html>");
         return resultText.toString();
@@ -92,7 +71,7 @@ public class MessageImageCreator {
         ImageIO.write(image, "png", new java.io.File(pngPath));
     }
 
-    private void createHtml(Joke... jokes) throws IOException {
+    private void createHtml(JokeImpl... jokes) throws IOException {
         String text = wrapJokesToHtmlTable(jokes);
 
         FileOutputStream out = new FileOutputStream(htmlResourcePath);
@@ -100,7 +79,7 @@ public class MessageImageCreator {
         out.close();
     }
 
-    public String createPNG(Joke... jokes) throws IOException {
+    public String createPNG(JokeImpl... jokes) throws IOException {
         createHtml(jokes);
         convertHtmlToPNG(htmlResourcePath, pngResourcePath);
         return pngResourcePath;

@@ -1,26 +1,24 @@
 package com.mailsender.data.joke;
 
-public class RussianJoke extends Joke {
+public class RussianJokeImpl extends JokeImpl {
 
     private String jokeText;
-
-    public RussianJoke(int cellsNumber) {
-        super(cellsNumber);
-    }
 
     @Override
     public String getHTMLRows() {
         StringBuffer bf = new StringBuffer();
 
         bf.append("" +
+                "<table>" +
                 "<tr>\n" +
-                "    <td class=\"lineUp\" colspan=\"3\">\n" +
+                "    <td>\n" +
                 "        <div style=\"color: #076b91;\">\n" +
                 jokeText +
                 "            \n" +
                 "        </div>\n" +
                 "    </td>\n" +
-                "</tr>");
+                "</tr>" +
+                "</table>");
 
         return bf.toString();
     }

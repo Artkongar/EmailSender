@@ -1,7 +1,6 @@
 package com.mailsender.controllers;
 
-import com.mailsender.data.joke.Joke;
-import com.mailsender.data.joke.TranslatedJoke;
+import com.mailsender.data.joke.JokeImpl;
 import com.mailsender.scheduling.ScheduledEmailSender;
 import com.mailsender.service.EmailMessageSenderService;
 import com.mailsender.service.JokeGenerator;
@@ -45,8 +44,8 @@ public class EmailSenderController {
     public void sendMail() throws Exception {
         try {
             System.out.println("Start sending");
-            Joke translatedJoke = jokeGenerator.getTranslatedJoke();
-            Joke russianJoke = jokeGenerator.getRussianJoke();
+            JokeImpl translatedJoke = jokeGenerator.getTranslatedJoke();
+            JokeImpl russianJoke = jokeGenerator.getRussianJoke();
             String formatedDateTime = LocalDateTime.now().format(ScheduledEmailSender.format);
 
             messageImageCreator.createPNG(

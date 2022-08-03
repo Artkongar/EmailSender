@@ -1,8 +1,7 @@
 package com.mailsender.scheduling;
 
 import com.mailsender.data.ServiceStatus;
-import com.mailsender.data.joke.Joke;
-import com.mailsender.data.joke.TranslatedJoke;
+import com.mailsender.data.joke.JokeImpl;
 import com.mailsender.service.EmailMessageSenderService;
 import com.mailsender.service.JokeGenerator;
 import com.mailsender.utils.MessageImageCreator;
@@ -12,7 +11,6 @@ import org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProc
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Random;
 
 public class ScheduledEmailSender {
 
@@ -43,8 +41,8 @@ public class ScheduledEmailSender {
         if (ServiceStatus.getInstance().isWorking()) {
             messageNumber ++;
             try {
-                Joke translatedJoke = jokeGenerator.getTranslatedJoke();
-                Joke russianJoke = jokeGenerator.getRussianJoke();
+                JokeImpl translatedJoke = jokeGenerator.getTranslatedJoke();
+                JokeImpl russianJoke = jokeGenerator.getRussianJoke();
                 String formatedDateTime = LocalDateTime.now().format(format);
 
                 messageImageCreator.createPNG(

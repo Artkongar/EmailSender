@@ -1,8 +1,8 @@
 package com.mailsender.service;
 
-import com.mailsender.data.joke.Joke;
-import com.mailsender.data.joke.RussianJoke;
-import com.mailsender.data.joke.TranslatedJoke;
+import com.mailsender.data.joke.JokeImpl;
+import com.mailsender.data.joke.RussianJokeImpl;
+import com.mailsender.data.joke.TranslatedJokeImpl;
 import com.mailsender.utils.StringEncoder;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -42,13 +42,13 @@ public class JokeGenerator {
         return translatedText;
     }
 
-    public Joke getRussianJoke() throws IOException, ParseException {
+    public JokeImpl getRussianJoke() throws IOException, ParseException {
         int attempts = 10;
         int attempt = 0;
 
         int[] jokeTypeNumbers = {1, 2, 3, 4, 5, 8, 11, 12, 13, 14, 15, 18};
         int jokeType = jokeTypeNumbers[rnd.nextInt(jokeTypeNumbers.length)];
-        RussianJoke russianJoke = new RussianJoke(1);
+        RussianJokeImpl russianJoke = new RussianJokeImpl();
 
         while (true) {
             attempt++;
@@ -68,13 +68,13 @@ public class JokeGenerator {
         }
     }
 
-    public Joke getTranslatedJoke() throws Exception {
+    public JokeImpl getTranslatedJoke() throws Exception {
         String url = "https://v2.jokeapi.dev/joke/Any";
         JSONObject response = (JSONObject) parser.parse(new InputStreamReader(createGetRequest(url), StandardCharsets.UTF_8));
         String category = (String) response.get("category");
         String joke = (String) response.get("joke");
 
-        TranslatedJoke translatedJoke = new TranslatedJoke(2);
+        TranslatedJokeImpl translatedJoke = new TranslatedJokeImpl();
         translatedJoke.setSubject(category);
         translatedJoke.setSubjectRu(translateAPI(category));
         if (joke != null) {
@@ -82,7 +82,6 @@ public class JokeGenerator {
             translatedJoke.setJokeRu(translateAPI(joke));
             translatedJoke.setJoke(joke);
         } else {
-            translatedJoke.setCellsNumber(3);
             String setup = (String) response.get("setup");
             String delivery = (String) response.get("delivery");
             translatedJoke.setSetup(setup);
