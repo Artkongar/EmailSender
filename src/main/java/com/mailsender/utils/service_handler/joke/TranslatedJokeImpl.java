@@ -1,6 +1,8 @@
-package com.mailsender.data.joke;
+package com.mailsender.utils.service_handler.joke;
 
-public class TranslatedJokeImpl extends JokeImpl {
+import com.mailsender.utils.service_handler.ServiceContent;
+
+public class TranslatedJokeImpl implements ServiceContent {
 
     private boolean hasPunchline = true;
 
@@ -22,6 +24,12 @@ public class TranslatedJokeImpl extends JokeImpl {
     @Override
     public String getHTMLRows() {
         StringBuffer htmlRows = new StringBuffer();
+        htmlRows.append("" +
+                "<div>" +
+                "   <b>" +
+                "       Шуточки" +
+                "   </b>" +
+                "</div>");
         htmlRows.append("<table>");
         if (hasPunchline) {
             htmlRows.append("" +

@@ -27,6 +27,22 @@ public class EmailMessageSenderService {
     private String message;
 
     public int sendMessage() throws Exception {
+        int attempts = 10;
+        int attemptsCount = 0;
+        while (true) {
+            try {
+                return send();
+            } catch (Exception e){
+                attemptsCount ++;
+                System.out.println("Can not send message. Trying again...(" + attemptsCount + ")");
+                if (attemptsCount > attempts){
+                    throw e;
+                }
+            }
+        }
+    }
+
+    private int send() throws Exception {
         String url = "https://api.nylas.com/send";
 
         CloseableHttpClient client = HttpClients.createDefault();

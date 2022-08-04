@@ -1,6 +1,8 @@
-package com.mailsender.data.joke;
+package com.mailsender.utils.service_handler.joke;
 
-public class RussianJokeImpl extends JokeImpl {
+import com.mailsender.utils.service_handler.ServiceContent;
+
+public class RussianJokeImpl implements ServiceContent {
 
     private String jokeText;
 

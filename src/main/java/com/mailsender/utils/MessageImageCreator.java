@@ -1,10 +1,17 @@
 package com.mailsender.utils;
 
-import com.mailsender.data.joke.JokeImpl;
+import com.mailsender.utils.service_handler.ServiceContent;
+import com.mailsender.service.ServiceContentGenerator;
 import com.nylas.Files;
 import com.nylas.NylasAccount;
 import com.nylas.NylasClient;
 import com.nylas.RequestFailedException;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.json.simple.parser.ParseException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.xhtmlrenderer.simple.Graphics2DRenderer;
 
@@ -13,13 +20,14 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Random;
 
 
 public class MessageImageCreator {
     public static Random rnd = new Random();
+
+    @Autowired
+    private ServiceContentGenerator serviceContentGenerator;
 
     @Value("${password}")
     private String password;
@@ -33,7 +41,7 @@ public class MessageImageCreator {
     @Value("${png_resource}")
     private String pngResourcePath;
 
-    private String wrapJokesToHtmlTable(JokeImpl... jokes) {
+    private String wrapServicesContentToHtmlTable(ServiceContent... serviceContents) throws Exception {
         StringBuffer resultText = new StringBuffer();
         resultText.append("" +
                 "<!DOCTYPE html>\n" +
@@ -48,17 +56,19 @@ public class MessageImageCreator {
                 "        }" +
                 "    </style>\n" +
                 "</head>\n" +
-                "<body>\n"
+                "<body>\n" +
+                "<div style=\"text-align: center\">"
         );
 
-        for (int i = 0; i < jokes.length; i++) {
-            JokeImpl joke = jokes[i];
+        for (int i = 0; i < serviceContents.length; i++) {
+            ServiceContent serviceContent = serviceContents[i];
             resultText.append("<div>\n");
-            resultText.append(joke.getHTMLRows());
+            resultText.append(serviceContent.getHTMLRows());
             resultText.append("</div>\n");
         }
 
         resultText.append("" +
+                "</div>" +
                 "</body>\n" +
                 "</html>");
         return resultText.toString();
@@ -71,18 +81,34 @@ public class MessageImageCreator {
         ImageIO.write(image, "png", new java.io.File(pngPath));
     }
 
-    private void createHtml(JokeImpl... jokes) throws IOException {
-        String text = wrapJokesToHtmlTable(jokes);
+    private void createHtml(ServiceContent... serviceContents) throws Exception {
+        String text = wrapServicesContentToHtmlTable(serviceContents);
 
         FileOutputStream out = new FileOutputStream(htmlResourcePath);
         out.write(text.getBytes(StandardCharsets.UTF_8));
         out.close();
     }
 
-    public String createPNG(JokeImpl... jokes) throws IOException {
-        createHtml(jokes);
-        convertHtmlToPNG(htmlResourcePath, pngResourcePath);
-        return pngResourcePath;
+    public String createPNG() throws Exception {
+        int attempts = 10;
+        int attemptsCount = 0;
+        while (true){
+            try {
+                ServiceContent translatedServiceContent = serviceContentGenerator.getTranslatedJoke();
+                ServiceContent russianServiceContent = serviceContentGenerator.getRussianJoke();
+                ServiceContent weatherServiceContent = serviceContentGenerator.getFiveDayWeatherData();
+
+                createHtml(translatedServiceContent, russianServiceContent, weatherServiceContent);
+                convertHtmlToPNG(htmlResourcePath, pngResourcePath);
+                return pngResourcePath;
+            } catch (Exception e){
+                attemptsCount ++;
+                System.out.println("Can not create PNG. Trying again...(" + attemptsCount + ")");
+                if (attemptsCount > attempts){
+                    throw e;
+                }
+            }
+        }
     }
 
     public String uploadAttachment() throws IOException, RequestFailedException {
@@ -91,9 +117,20 @@ public class MessageImageCreator {
         Files files = account.files();
 
         byte[] myFile = java.nio.file.Files.readAllBytes(Paths.get(pngResourcePath));
-        com.nylas.File upload = files.upload(rnd.nextInt() + "", "image/png", myFile);
+        int imageName = rnd.nextInt();
+        if (imageName < 0){
+            imageName *= -1;
+        }
+        com.nylas.File upload = files.upload("Уведомление №" + imageName + ".png", "image/png", myFile);
 
         return upload.getId();
+    }
+
+    public static InputStream createGetRequest(String endpoint) throws IOException, ParseException {
+        CloseableHttpClient httpclient = HttpClients.createDefault();
+        HttpGet httpget = new HttpGet(endpoint);
+        HttpResponse httpresponse = httpclient.execute(httpget);
+        return httpresponse.getEntity().getContent();
     }
 
 }

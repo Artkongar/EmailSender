@@ -2,7 +2,7 @@ package com.mailsender.config;
 
 import com.mailsender.scheduling.ScheduledEmailSender;
 import com.mailsender.service.EmailMessageSenderService;
-import com.mailsender.service.JokeGenerator;
+import com.mailsender.service.ServiceContentGenerator;
 import com.mailsender.utils.MessageImageCreator;
 import com.mailsender.utils.SchedulingSwitcher;
 import org.springframework.context.annotation.Bean;
@@ -29,8 +29,8 @@ public class Config {
     }
 
     @Bean
-    public JokeGenerator getJokeGenerator() {
-        return new JokeGenerator();
+    public ServiceContentGenerator getJokeGenerator() {
+        return new ServiceContentGenerator();
     }
 
     @Bean

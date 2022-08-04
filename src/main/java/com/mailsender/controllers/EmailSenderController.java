@@ -1,9 +1,8 @@
 package com.mailsender.controllers;
 
-import com.mailsender.data.joke.JokeImpl;
 import com.mailsender.scheduling.ScheduledEmailSender;
 import com.mailsender.service.EmailMessageSenderService;
-import com.mailsender.service.JokeGenerator;
+import com.mailsender.service.ServiceContentGenerator;
 import com.mailsender.utils.MessageImageCreator;
 import com.mailsender.utils.SchedulingSwitcher;
 import org.json.simple.JSONObject;
@@ -20,7 +19,6 @@ import java.util.Map;
 @Controller
 public class EmailSenderController {
 
-    private JokeGenerator jokeGenerator;
     private EmailMessageSenderService mailSender;
 
     @Autowired
@@ -34,26 +32,18 @@ public class EmailSenderController {
         this.mailSender = mailSender;
     }
 
-    @Autowired
-    public void setJokeGenerator(JokeGenerator jokeGenerator) {
-        this.jokeGenerator = jokeGenerator;
-    }
 
     @ResponseBody
     @RequestMapping(value = "/send_message", method = RequestMethod.POST)
     public void sendMail() throws Exception {
         try {
-            System.out.println("Start sending");
-            JokeImpl translatedJoke = jokeGenerator.getTranslatedJoke();
-            JokeImpl russianJoke = jokeGenerator.getRussianJoke();
             String formatedDateTime = LocalDateTime.now().format(ScheduledEmailSender.format);
+            System.out.println("Start sending");
 
-            messageImageCreator.createPNG(
-                    translatedJoke, russianJoke
-            );
+            messageImageCreator.createPNG();
             mailSender.setMessage(messageImageCreator.uploadAttachment());
 
-            mailSender.setHeader(formatedDateTime);
+            mailSender.setHeader("Love you so Much: " + formatedDateTime);
             mailSender.sendMessage();
             System.out.println("Message was sent");
         } catch (Exception e) {

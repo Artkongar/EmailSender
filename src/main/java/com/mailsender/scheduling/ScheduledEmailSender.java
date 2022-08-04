@@ -1,9 +1,7 @@
 package com.mailsender.scheduling;
 
 import com.mailsender.data.ServiceStatus;
-import com.mailsender.data.joke.JokeImpl;
 import com.mailsender.service.EmailMessageSenderService;
-import com.mailsender.service.JokeGenerator;
 import com.mailsender.utils.MessageImageCreator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -14,7 +12,6 @@ import java.time.format.DateTimeFormatter;
 
 public class ScheduledEmailSender {
 
-    private JokeGenerator jokeGenerator;
     private EmailMessageSenderService mailSender;
     public static final DateTimeFormatter format = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 
@@ -23,11 +20,6 @@ public class ScheduledEmailSender {
 
     @Autowired
     private ScheduledAnnotationBeanPostProcessor postProcessor;
-
-    @Autowired
-    public void setJokeGenerator(JokeGenerator jokeGenerator) {
-        this.jokeGenerator = jokeGenerator;
-    }
 
     @Autowired
     public void setMailSender(EmailMessageSenderService mailSender) {
@@ -39,15 +31,11 @@ public class ScheduledEmailSender {
     @Scheduled(fixedDelay = 10000) // cron = "0 0 */2 * * ?"
     public void reportCurrentTime() {
         if (ServiceStatus.getInstance().isWorking()) {
-            messageNumber ++;
+            messageNumber++;
             try {
-                JokeImpl translatedJoke = jokeGenerator.getTranslatedJoke();
-                JokeImpl russianJoke = jokeGenerator.getRussianJoke();
                 String formatedDateTime = LocalDateTime.now().format(format);
 
-                messageImageCreator.createPNG(
-                        translatedJoke, russianJoke
-                );
+                messageImageCreator.createPNG();
                 mailSender.setMessage(messageImageCreator.uploadAttachment());
 
                 mailSender.setHeader(formatedDateTime);

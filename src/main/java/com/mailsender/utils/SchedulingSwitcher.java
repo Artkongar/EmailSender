@@ -4,16 +4,15 @@ import com.mailsender.data.ServiceStatus;
 import com.mailsender.scheduling.ScheduledEmailSender;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProcessor;
-import org.springframework.scheduling.config.ScheduledTask;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 public class SchedulingSwitcher {
 
     private final String scheduledTaskBeanName = "EmailSender";
     private ScheduledAnnotationBeanPostProcessor postProcessor;
+
     @Autowired
     private ScheduledEmailSender scheduledTask;
 
