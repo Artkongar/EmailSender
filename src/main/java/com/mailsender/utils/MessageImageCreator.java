@@ -32,14 +32,12 @@ public class MessageImageCreator {
     @Value("${password}")
     private String password;
 
-    @Value("${html_template}")
-    private String htmlTemplatePath;
+    private String generatedResourcePath = new StringBuffer()
+            .append("src" + File.separator)
+            .append("main" + File.separator)
+            .append("resources"+ File.separator)
+            .append("generated_resources"+ File.separator).toString();
 
-    @Value("${html_resource}")
-    private String htmlResourcePath;
-
-    @Value("${png_resource}")
-    private String pngResourcePath;
 
     private String wrapServicesContentToHtmlTable(ServiceContent... serviceContents) throws Exception {
         StringBuffer resultText = new StringBuffer();
@@ -81,44 +79,65 @@ public class MessageImageCreator {
         ImageIO.write(image, "png", new java.io.File(pngPath));
     }
 
-    private void createHtml(ServiceContent... serviceContents) throws Exception {
-        String text = wrapServicesContentToHtmlTable(serviceContents);
+    private void createHtml(String htmlPath, ServiceContent... serviceContents) throws Exception {
+        try {
+            String text = wrapServicesContentToHtmlTable(serviceContents);
 
-        FileOutputStream out = new FileOutputStream(htmlResourcePath);
-        out.write(text.getBytes(StandardCharsets.UTF_8));
-        out.close();
+            File htmlResourceFile = new File(htmlPath);
+            htmlResourceFile.createNewFile();
+
+            FileOutputStream out = new FileOutputStream(htmlResourceFile);
+            out.write(text.getBytes(StandardCharsets.UTF_8));
+            out.close();
+        } catch (Exception e) {
+            System.out.println("Can not create HTML");
+            throw e;
+        }
     }
 
-    public String createPNG() throws Exception {
-        int attempts = 10;
+    public String uploadImageContent() throws Exception {
+        long threadId = Thread.currentThread().getId();
+        String htmlPath = generatedResourcePath + threadId + "_content.html";
+        String pngPath = generatedResourcePath + threadId + "content.png";
+
+        int attempts = 5;
         int attemptsCount = 0;
-        while (true){
+        while (true) {
             try {
                 ServiceContent translatedServiceContent = serviceContentGenerator.getTranslatedJoke();
                 ServiceContent russianServiceContent = serviceContentGenerator.getRussianJoke();
                 ServiceContent weatherServiceContent = serviceContentGenerator.getFiveDayWeatherData();
 
-                createHtml(translatedServiceContent, russianServiceContent, weatherServiceContent);
-                convertHtmlToPNG(htmlResourcePath, pngResourcePath);
-                return pngResourcePath;
-            } catch (Exception e){
-                attemptsCount ++;
+                File generatedResourcesPath = new File(generatedResourcePath);
+                if (!generatedResourcesPath.exists()){
+                    generatedResourcesPath.mkdir();
+                }
+                createHtml(htmlPath, translatedServiceContent, russianServiceContent, weatherServiceContent);
+                convertHtmlToPNG(htmlPath, pngPath);
+                break;
+            } catch (Exception e) {
+                attemptsCount++;
                 System.out.println("Can not create PNG. Trying again...(" + attemptsCount + ")");
-                if (attemptsCount > attempts){
+                if (attemptsCount > attempts) {
                     throw e;
                 }
             }
         }
+        String uploadedImageId = uploadAttachment(pngPath);
+        new File(htmlPath).delete();
+        new File(pngPath).delete();
+
+        return uploadedImageId;
     }
 
-    public String uploadAttachment() throws IOException, RequestFailedException {
+    public String uploadAttachment(String pngResourcePath) throws IOException, RequestFailedException {
         NylasClient nylas = new NylasClient();
         NylasAccount account = nylas.account(password);
         Files files = account.files();
 
         byte[] myFile = java.nio.file.Files.readAllBytes(Paths.get(pngResourcePath));
         int imageName = rnd.nextInt();
-        if (imageName < 0){
+        if (imageName < 0) {
             imageName *= -1;
         }
         com.nylas.File upload = files.upload("Уведомление №" + imageName + ".png", "image/png", myFile);

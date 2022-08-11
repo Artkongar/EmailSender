@@ -35,8 +35,8 @@ public class ScheduledEmailSender {
             try {
                 String formatedDateTime = LocalDateTime.now().format(format);
 
-                messageImageCreator.createPNG();
-                mailSender.setMessage(messageImageCreator.uploadAttachment());
+                String uploadedImageId = messageImageCreator.uploadImageContent();
+                mailSender.setMessage(uploadedImageId);
 
                 mailSender.setHeader(formatedDateTime);
                 System.out.println("Sending message №" + messageNumber + " ...");

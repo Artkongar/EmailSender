@@ -2,7 +2,6 @@ package com.mailsender.controllers;
 
 import com.mailsender.scheduling.ScheduledEmailSender;
 import com.mailsender.service.EmailMessageSenderService;
-import com.mailsender.service.ServiceContentGenerator;
 import com.mailsender.utils.MessageImageCreator;
 import com.mailsender.utils.SchedulingSwitcher;
 import org.json.simple.JSONObject;
@@ -39,9 +38,8 @@ public class EmailSenderController {
         try {
             String formatedDateTime = LocalDateTime.now().format(ScheduledEmailSender.format);
             System.out.println("Start sending");
-
-            messageImageCreator.createPNG();
-            mailSender.setMessage(messageImageCreator.uploadAttachment());
+            String uploadedImageId = messageImageCreator.uploadImageContent();
+            mailSender.setMessage(uploadedImageId);
 
             mailSender.setHeader("Love you so Much: " + formatedDateTime);
             mailSender.sendMessage();

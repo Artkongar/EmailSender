@@ -50,7 +50,7 @@ public class ServiceContentGenerator {
         JSONObject answer = (JSONObject) parser.parse(new InputStreamReader(MessageImageCreator.createGetRequest(url + params), StandardCharsets.UTF_8));
         String translatedText;
         Long responseStatus = (Long) answer.get("responseStatus");
-        if (responseStatus == 200){
+        if (responseStatus == 200) {
             JSONObject responseData = (JSONObject) answer.get("responseData");
             translatedText = (String) responseData.get("translatedText");
         } else {
@@ -86,28 +86,39 @@ public class ServiceContentGenerator {
         }
     }
 
-    public ServiceContent getTranslatedJoke() throws Exception {
-        String url = "https://v2.jokeapi.dev/joke/Any";
-        JSONObject response = (JSONObject) parser.parse(new InputStreamReader(MessageImageCreator.createGetRequest(url), StandardCharsets.UTF_8));
-        String category = (String) response.get("category");
-        String joke = (String) response.get("joke");
-
+    public ServiceContent getTranslatedJoke() {
         TranslatedJokeImpl translatedJoke = new TranslatedJokeImpl();
-        translatedJoke.setSubject(category);
-        translatedJoke.setSubjectRu(translateAPI(category));
-        if (joke != null) {
-            translatedJoke.setHasPunchline(false);
-            translatedJoke.setJokeRu(translateAPI(joke));
-            translatedJoke.setJoke(joke);
-        } else {
-            String setup = (String) response.get("setup");
-            String delivery = (String) response.get("delivery");
-            translatedJoke.setSetup(setup);
-            translatedJoke.setPunchline(delivery);
-            translatedJoke.setSetupRu(translateAPI(setup));
-            translatedJoke.setPunchlineRu(translateAPI(delivery));
-        }
+        try {
+            String url = "https://v2.jokeapi.dev/joke/Any";
+            JSONObject response = (JSONObject) parser.parse(new InputStreamReader(MessageImageCreator.createGetRequest(url), StandardCharsets.UTF_8));
+            String category = (String) response.get("category");
+            String joke = (String) response.get("joke");
+            translatedJoke.setSubject(category);
+            translatedJoke.setSubjectRu(translateAPI(category));
 
+            if (joke != null) {
+                String jokeRu = translateAPI(joke);
+                translatedJoke.setHasPunchline(false);
+                translatedJoke.setJokeRu(jokeRu);
+                translatedJoke.setJoke(joke);
+            } else {
+                String setup = (String) response.get("setup");
+                String delivery = (String) response.get("delivery");
+                String setupRu = translateAPI(setup);
+                String deliveryRu = translateAPI(delivery);
+
+                translatedJoke.setSetup(setup);
+                translatedJoke.setPunchline(delivery);
+                translatedJoke.setSetupRu(setupRu);
+                translatedJoke.setPunchlineRu(deliveryRu);
+            }
+            return translatedJoke;
+        } catch (Exception e) {
+            translatedJoke.setSetup("No API answer");
+            translatedJoke.setPunchline("No API answer");
+            translatedJoke.setSetupRu("Проблемы с получением шутки");
+            translatedJoke.setPunchlineRu("Проблемы с получением шутки");
+        }
         return translatedJoke;
     }
 
