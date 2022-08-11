@@ -21,6 +21,9 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.Random;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 public class MessageImageCreator {
@@ -32,10 +35,10 @@ public class MessageImageCreator {
     @Value("${password}")
     private String password;
 
-    private String generatedResourcePath = new StringBuffer()
-            .append("src" + File.separator)
-            .append("main" + File.separator)
-            .append("resources"+ File.separator)
+    private final String GENERATED_RESOURCES_PATH = new StringBuffer()
+            .append(File.separator)
+            .append("projects" + File.separator)
+            .append("EmailSender" + File.separator)
             .append("generated_resources"+ File.separator).toString();
 
 
@@ -79,6 +82,13 @@ public class MessageImageCreator {
         ImageIO.write(image, "png", new java.io.File(pngPath));
     }
 
+    public Set<String> listFilesUsingJavaIO(String dir) {
+        return Stream.of(new File(dir).listFiles())
+                .filter(file -> !file.isDirectory())
+                .map(File::getName)
+                .collect(Collectors.toSet());
+    }
+
     private void createHtml(String htmlPath, ServiceContent... serviceContents) throws Exception {
         try {
             String text = wrapServicesContentToHtmlTable(serviceContents);
@@ -97,8 +107,8 @@ public class MessageImageCreator {
 
     public String uploadImageContent() throws Exception {
         long threadId = Thread.currentThread().getId();
-        String htmlPath = generatedResourcePath + threadId + "_content.html";
-        String pngPath = generatedResourcePath + threadId + "content.png";
+        String htmlPath = GENERATED_RESOURCES_PATH + threadId + "_content.html";
+        String pngPath = GENERATED_RESOURCES_PATH + threadId + "content.png";
 
         int attempts = 5;
         int attemptsCount = 0;
@@ -108,9 +118,8 @@ public class MessageImageCreator {
                 ServiceContent russianServiceContent = serviceContentGenerator.getRussianJoke();
                 ServiceContent weatherServiceContent = serviceContentGenerator.getFiveDayWeatherData();
 
-                File generatedResourcesPath = new File(generatedResourcePath);
-                if (!generatedResourcesPath.exists()){
-                    generatedResourcesPath.mkdir();
+                if (!new File(GENERATED_RESOURCES_PATH).exists()){
+                    new File(GENERATED_RESOURCES_PATH).mkdir();
                 }
                 createHtml(htmlPath, translatedServiceContent, russianServiceContent, weatherServiceContent);
                 convertHtmlToPNG(htmlPath, pngPath);
