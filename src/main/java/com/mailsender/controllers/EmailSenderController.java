@@ -4,6 +4,8 @@ import com.mailsender.scheduling.ScheduledEmailSender;
 import com.mailsender.service.EmailMessageSenderService;
 import com.mailsender.utils.MessageImageCreator;
 import com.mailsender.utils.SchedulingSwitcher;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -17,6 +19,8 @@ import java.util.Map;
 
 @Controller
 public class EmailSenderController {
+
+    private static final Logger LOGGER = LogManager.getLogger(EmailSenderController.class);
 
     private EmailMessageSenderService mailSender;
 
@@ -34,19 +38,19 @@ public class EmailSenderController {
 
     @ResponseBody
     @RequestMapping(value = "/send_message", method = RequestMethod.POST)
-    public void sendMail() throws Exception {
+    public void sendMail() {
         try {
             String formatedDateTime = LocalDateTime.now().format(ScheduledEmailSender.format);
-            System.out.println("Start sending");
+            LOGGER.info("Start sending");
             String uploadedImageId = messageImageCreator.uploadImageContent();
             mailSender.setMessage(uploadedImageId);
 
             mailSender.setHeader("Love you so Much: " + formatedDateTime);
             mailSender.sendMessage();
-            System.out.println("Message was sent");
+            LOGGER.info("Message was sent");
         } catch (Exception e) {
-            System.out.println("Can not send Email");
-            throw e;
+            LOGGER.error("Can not send Email");
+            LOGGER.error(e.getMessage(), e);
         }
     }
 

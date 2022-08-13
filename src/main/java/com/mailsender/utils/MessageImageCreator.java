@@ -1,5 +1,6 @@
 package com.mailsender.utils;
 
+import com.mailsender.controllers.EmailSenderController;
 import com.mailsender.utils.service_handler.ServiceContent;
 import com.mailsender.service.ServiceContentGenerator;
 import com.nylas.Files;
@@ -10,6 +11,8 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,6 +30,9 @@ import java.util.stream.Stream;
 
 
 public class MessageImageCreator {
+
+    private static final Logger LOGGER = LogManager.getLogger(MessageImageCreator.class);
+
     public static Random rnd = new Random();
 
     @Autowired
@@ -82,13 +88,6 @@ public class MessageImageCreator {
         ImageIO.write(image, "png", new java.io.File(pngPath));
     }
 
-    public Set<String> listFilesUsingJavaIO(String dir) {
-        return Stream.of(new File(dir).listFiles())
-                .filter(file -> !file.isDirectory())
-                .map(File::getName)
-                .collect(Collectors.toSet());
-    }
-
     private void createHtml(String htmlPath, ServiceContent... serviceContents) throws Exception {
         try {
             String text = wrapServicesContentToHtmlTable(serviceContents);
@@ -100,7 +99,7 @@ public class MessageImageCreator {
             out.write(text.getBytes(StandardCharsets.UTF_8));
             out.close();
         } catch (Exception e) {
-            System.out.println("Can not create HTML");
+            LOGGER.error("Can not create HTML");
             throw e;
         }
     }
@@ -126,9 +125,9 @@ public class MessageImageCreator {
                 break;
             } catch (Exception e) {
                 attemptsCount++;
-                System.out.println("Can not create PNG. Trying again...(" + attemptsCount + ")");
+                LOGGER.error("Can not create PNG. Trying again...(" + attemptsCount + ")");
                 if (attemptsCount > attempts) {
-                    throw e;
+                    LOGGER.error(e.getMessage(), e);
                 }
             }
         }
@@ -140,6 +139,7 @@ public class MessageImageCreator {
     }
 
     public String uploadAttachment(String pngResourcePath) throws IOException, RequestFailedException {
+
         NylasClient nylas = new NylasClient();
         NylasAccount account = nylas.account(password);
         Files files = account.files();

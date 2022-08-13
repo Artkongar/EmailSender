@@ -1,11 +1,14 @@
 package com.mailsender.service;
 
+import com.mailsender.controllers.EmailSenderController;
 import com.mailsender.utils.MessageImageCreator;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +16,8 @@ import org.springframework.beans.factory.annotation.Value;
 
 
 public class EmailMessageSenderService {
+
+    private static final Logger LOGGER = LogManager.getLogger(EmailMessageSenderService.class);
 
     @Value("${from_login}")
     private String fromLogin;
@@ -34,7 +39,7 @@ public class EmailMessageSenderService {
                 return send();
             } catch (Exception e){
                 attemptsCount ++;
-                System.out.println("Can not send message. Trying again...(" + attemptsCount + ")");
+                LOGGER.error("Can not send message. Trying again...(" + attemptsCount + ")");
                 if (attemptsCount > attempts){
                     throw e;
                 }
