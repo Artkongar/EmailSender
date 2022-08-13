@@ -28,7 +28,7 @@ public class ScheduledEmailSender {
 
     private int messageNumber = 0;
 
-    @Scheduled(fixedDelay = 10000) // cron = "0 0 */2 * * ?"
+    @Scheduled(cron = "0 0 */2 * * ?")
     public void reportCurrentTime() {
         if (ServiceStatus.getInstance().isWorking()) {
             messageNumber++;
