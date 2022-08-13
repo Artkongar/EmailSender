@@ -128,6 +128,7 @@ public class MessageImageCreator {
                 LOGGER.error("Can not create PNG. Trying again...(" + attemptsCount + ")");
                 if (attemptsCount > attempts) {
                     LOGGER.error(e.getMessage(), e);
+                    break;
                 }
             }
         }

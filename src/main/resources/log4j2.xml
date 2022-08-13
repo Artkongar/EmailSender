@@ -8,23 +8,31 @@
 
         <File name="EmailSender_full_log" fileName="logs/full_log.log">
             <PatternLayout>
-                <Pattern>%d %p %c{1.} [%t] %m%n</Pattern>
+                <Pattern>
+                    %sn %d{yyyy/MM/dd HH:mm:ss,SSS} %r [%-6p] [%t] %C{3}.%M(%F:%L) - %m%n
+                </Pattern>
             </PatternLayout>
         </File>
 
         <File name="EmailSender_errors" fileName="logs/email_sender_errors.log">
+            <LevelRangeFilter minLevel="error" maxLevel="error"/>
             <PatternLayout>
-                <Pattern>%d %p %c{1.} [%t] %m%n</Pattern>
+                <Pattern>
+                    %sn %d{yyyy/MM/dd HH:mm:ss,SSS} %r [%-6p] [%t] %C{3}.%M(%F:%L) - %m%n
+                </Pattern>
             </PatternLayout>
         </File>
     </Appenders>
 
     <Loggers>
-        <Logger name="com.mailsender" additivity="true">
-            <AppenderRef ref="Console" level="all"/>
-            <AppenderRef ref="EmailSender_full_log" level="all"/>
-            <AppenderRef ref="EmailSender_errors" level="error"/>
+        <Logger name="com.mailsender" level="ALL" additivity="false">
+            <AppenderRef ref="EmailSender_full_log"/>
+            <AppenderRef ref="EmailSender_errors"/>
         </Logger>
+
+        <Root level="info">
+            <AppenderRef ref="Console"/>
+        </Root>
     </Loggers>
 
 </Configuration>
