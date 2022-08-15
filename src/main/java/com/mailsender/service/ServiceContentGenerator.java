@@ -1,7 +1,7 @@
 package com.mailsender.service;
 
 import com.mailsender.utils.service_handler.ServiceContent;
-import com.mailsender.data.dto.DayWeather;
+import com.mailsender.data.DayWeather;
 import com.mailsender.utils.service_handler.joke.RussianJokeImpl;
 import com.mailsender.utils.service_handler.joke.TranslatedJokeImpl;
 import com.mailsender.utils.service_handler.weather.FiveDayWeatherImpl;
@@ -17,12 +17,10 @@ import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Random;

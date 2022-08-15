@@ -1,4 +1,4 @@
-package com.mailsender.data.dto;
+package com.mailsender.data;
 
 import java.time.LocalTime;
 import java.util.HashMap;

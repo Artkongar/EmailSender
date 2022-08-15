@@ -1,17 +1,12 @@
 package com.mailsender.utils.service_handler.weather;
 
 import com.mailsender.data.Months;
-import com.mailsender.data.dto.DayWeather;
-import com.mailsender.service.ServiceContentGenerator;
+import com.mailsender.data.DayWeather;
 import com.mailsender.utils.service_handler.ServiceContent;
-import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Value;
 
-import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.format.TextStyle;
-import java.util.Locale;
 import java.util.Map;
 
 

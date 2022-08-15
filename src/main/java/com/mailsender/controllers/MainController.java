@@ -11,4 +11,9 @@ public class MainController {
     public String viewIndex(){
         return "index.html";
     }
+
+    @RequestMapping(value = "/test", method = RequestMethod.GET)
+    public String viewTest(){
+        return "login.html";
+    }
 }
